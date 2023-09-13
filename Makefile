@@ -1,6 +1,6 @@
 CC = clang
 
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -D_FILE_OFFSET_BITS=64
 
 LDFLAGS = -lfuse3
 

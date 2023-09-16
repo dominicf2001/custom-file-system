@@ -8,10 +8,15 @@ SOURCES = main.c
 
 OUTPUT = fs
 
+TEST_OUTPUT = test
+
 all: $(OUTPUT)
 
 $(OUTPUT): $(SOURCES)
 	$(CC) $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
 
+test: test.c
+	$(CC) $(CFLAGS) test.c b_tree.c -o $(TEST_OUTPUT)
+
 clean:
-	rm -f $(OUTPUT)
+	rm -f $(OUTPUT) $(TEST_OUTPUT)

@@ -24,20 +24,32 @@ void node_insert(struct node *root, struct node *new_child) {
     }
 }
 
-void node_debug_print(struct node* node) {
-    printf("NODE: \n\n");
-    printf("data: %d\n", node->data);
-    printf("max_children: %d\n", node->max_children);
+void node_debug_print_helper(struct node* node, int level) {
+    for (int i = 0; i < level; ++i) {
+        printf("  ");
+    }
     
-    for (int i = 0; i < node->max_children; ++i){
+    printf("Node Data: %d, Max Children: %d\n", node->data, node->max_children);
+    
+    for (int i = 0; i < node->max_children; ++i) {
         struct node* child = node->children[i];
         
-        printf("Child %d: \n", i);
-        if (child){
-            node_debug_print(child);   
-        } else {
-            printf("NULL");
+        for (int j = 0; j < level + 1; ++j) {
+            printf("  ");
         }
-        printf("\n\n");
+        printf("Child %d: ", i);
+
+        if (child) {
+            node_debug_print_helper(child, level + 2);
+        } else {
+            printf("NULL\n");
+        }
     }
 }
+
+void node_debug_print(struct node* root) {
+    printf("=== B-Tree Debug Print ===\n");
+    node_debug_print_helper(root, 0);
+    printf("==========================\n");
+}
+

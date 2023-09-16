@@ -18,7 +18,7 @@ struct node *node_construct(int data);
 /**
  * Inserts a node into b-tree, starting the traversal from root
  */
-void node_insert(struct node *root, struct node *new_child);
+void node_insert(struct node *node, struct node *level);
 
 /**
  * Prints the data, max_children, and each child recursively

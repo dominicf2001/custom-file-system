@@ -15,14 +15,13 @@ struct node* node_construct(int data) {
     return n;
 }
 
-int node_insert(struct node *root, struct node *new_child) {
-
+void node_insert(struct node *root, struct node *new_child) {
     for (int i = 0; i < root->max_children; ++i){
-        struct node* child = root->children[i];
-        child = child ? child : new_child;
+        if (!root->children[i]) {
+            root->children[i] = new_child;
+            break;            
+        }
     }
-
-    return 0;
 }
 
 void node_debug_print(struct node* node) {
@@ -39,6 +38,6 @@ void node_debug_print(struct node* node) {
         } else {
             printf("NULL");
         }
-        printf("\n");
+        printf("\n\n");
     }
 }

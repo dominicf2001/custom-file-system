@@ -17,13 +17,11 @@ struct node *node_construct(int data);
 
 /**
  * Inserts a node into b-tree, starting the traversal from root
- * @return 0 on success and -1 on error
  */
-int node_insert(struct node *root, struct node *new_child);
+void node_insert(struct node *root, struct node *new_child);
 
 /**
- * Prints the data, max_children, and each child recursively 
- * @return void
+ * Prints the data, max_children, and each child recursively
  */
 void node_debug_print(struct node* node);
 

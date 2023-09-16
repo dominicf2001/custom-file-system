@@ -13,6 +13,8 @@ struct node {
 
 struct node* node_construct(int data);
 
-void node_insert(struct node* root, struct node* n);
+void node_insert(struct node *root, struct node *n);
+
+void node_debug_print(struct node* n);
 
 #endif // B_TREE_H_

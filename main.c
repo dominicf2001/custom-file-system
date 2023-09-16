@@ -35,7 +35,8 @@ static struct fuse_operations domFS_operations = {
 };
 
 int main(int argc, char* argv[]) {
-
+    
+    
     return fuse_main(argc, argv, &domFS_operations, NULL);
 }
 

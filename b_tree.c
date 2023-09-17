@@ -29,7 +29,7 @@ void node_debug_print_helper(struct node* node, int level) {
         printf("  ");
     }
     
-    printf("Node Data: %d, Max Children: %d\n", node->data, node->max_children);
+    printf("Node - Data: %d, Max Children: %d\n", node->data, node->max_children);
     
     for (int i = 0; i < node->max_children; ++i) {
         struct node* child = node->children[i];

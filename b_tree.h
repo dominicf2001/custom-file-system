@@ -21,7 +21,7 @@ struct node *node_construct(int data);
 void node_insert(struct node *node, struct node *level);
 
 /**
- * Prints the data, max_children, and each child recursively
+ * Prints the data, max_children, and children recursively
  */
 void node_debug_print(struct node* node);
 

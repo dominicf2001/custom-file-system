@@ -1,26 +1,39 @@
 #include "b_tree.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
-static const double m = 3.0;
-
-struct node* node_construct(int data) {
+// Add min_children?
+struct node* node_construct() {
     struct node* n = malloc(sizeof(struct node));
+    
+    n->max_children = 3;
+    n->max_keys = n->max_children - 1;
 
-    n->data = data;
-    n->max_children = ceil(m / 2);
     n->children = malloc(sizeof(struct node*) * n->max_children);
+    n->keys = malloc(sizeof(int) * (n->max_keys));
+    
     memset(n->children, 0, n->max_children * sizeof(struct node*));
+    memset(n->keys, 0, n->max_keys * sizeof(int));
+    
     return n;
 }
 
-void node_insert(struct node *root, struct node *new_child) {
-    for (int i = 0; i < root->max_children; ++i){
-        if (!root->children[i]) {
-            root->children[i] = new_child;
-            break;            
-        }
+void node_insert(struct node *root, int key) {
+    bool isFull = root->keys[root->max_keys - 1];
+
+    if (isFull) {
+        printf("Node is full. Need to break.\n");
+        return;
+    }
+
+    for (int i = 0; i < root->max_keys; ++i) {
+        if (!root->keys[i]) {
+            root->keys[i] = key;
+            return;
+        }       
     }
 }
 
@@ -28,8 +41,16 @@ void node_debug_print_helper(struct node* node, int level) {
     for (int i = 0; i < level; ++i) {
         printf("  ");
     }
-    
-    printf("Node - Data: %d, Max Children: %d\n", node->data, node->max_children);
+
+    printf("Node - keys: [");
+    for (int i = 0; i < node->max_keys; ++i) {
+        if (i == node->max_keys - 1) {
+            printf("%d", node->keys[i]);
+        } else {
+            printf("%d, ", node->keys[i]);   
+        }
+    }
+    printf("] Max Children: %d\n", node->max_children);
     
     for (int i = 0; i < node->max_children; ++i) {
         struct node* child = node->children[i];

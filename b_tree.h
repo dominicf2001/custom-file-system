@@ -3,25 +3,26 @@
 #include <stdlib.h>
 
 struct node {
-    int data;
+    int* keys;
 
     int max_children;
+    int max_keys;
     struct node** children;
 };
 
 /**
- * Inserts a node into b-tree, starting the traversal from root
+ * constructs a node
  * @return the constructed node
  */
-struct node *node_construct(int data);
+struct node *node_construct();
 
 /**
- * Inserts a node into b-tree, starting the traversal from root
+ * Inserts a key into b-tree, starting the traversal from root
  */
-void node_insert(struct node *node, struct node *level);
+void node_insert(struct node *node, int key);
 
 /**
- * Prints the data, max_children, and children recursively
+ * Prints the keys, max_children, and children recursively
  */
 void node_debug_print(struct node* node);
 

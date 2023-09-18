@@ -7,6 +7,7 @@ struct node {
 
     int max_children;
     int max_keys;
+    int key_count;
     struct node** children;
 };
 

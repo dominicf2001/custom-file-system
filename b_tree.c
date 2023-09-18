@@ -6,15 +6,15 @@
 #include <stdbool.h>
 
   
-void swap(int* xp, int* yp)
-{
+void swap(int* xp, int* yp) {
     int temp = *xp;
     *xp = *yp;
     *yp = temp;
 }
 
-void selection_sort(int arr[], int n)
-{
+// will need to be modified to handle struct
+// How to sort the structs?
+void selection_sort(int arr[], int n) {
     int i, j, min_idx;
     
     for (i = 0; i < n - 1; i++) {
@@ -26,7 +26,6 @@ void selection_sort(int arr[], int n)
         swap(&arr[min_idx], &arr[i]);
     }
 }
-  
 
 // Add min_children?
 struct node* node_construct() {
@@ -37,6 +36,8 @@ struct node* node_construct() {
 
     n->children = malloc(sizeof(struct node*) * n->max_children);
     n->keys = malloc(sizeof(int) * (n->max_keys));
+
+    n->key_count = 0;
     
     memset(n->children, 0, n->max_children * sizeof(struct node*));
     memset(n->keys, 0, n->max_keys * sizeof(int));
@@ -45,9 +46,7 @@ struct node* node_construct() {
 }
 
 void node_insert(struct node *root, int key) {
-    bool isFull = root->keys[root->max_keys - 1];
-
-    if (isFull) {
+    if (root->key_count == root->max_keys) {
         printf("Node is full. Need to break.\n");
         return;
     }
@@ -55,8 +54,11 @@ void node_insert(struct node *root, int key) {
     for (int i = 0; i < root->max_keys; ++i) {
         if (!root->keys[i]) {
             root->keys[i] = key;
+            ++root->key_count;
+            
+            selection_sort(root->keys, root->key_count);
             return;
-        }       
+        }
     }
 }
 

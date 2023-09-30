@@ -1,6 +1,7 @@
 #ifndef B_TREE_H_
 #define B_TREE_H_
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct node {
     int* keys;
@@ -8,6 +9,7 @@ struct node {
     int max_children;
     int max_keys;
     int key_count;
+    bool is_root;
     struct node** children;
 };
 
@@ -15,7 +17,7 @@ struct node {
  * constructs a node
  * @return the constructed node
  */
-struct node *node_construct();
+struct node* node_construct(bool is_root);
 
 /**
  * Inserts a key into b-tree, starting the traversal from root

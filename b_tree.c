@@ -34,7 +34,7 @@ struct node* node_construct(struct node* parent) {
     node->max_children = 3;
     node->max_keys = node->max_children - 1;
 
-    node->children = malloc(sizeof(struct node*) * node->max_children);
+    node->children = malloc(sizeof(struct node*) * (node->max_children + 1));
     node->keys = malloc(sizeof(int) * (node->max_keys + 1));
     node->parent = parent;
 
@@ -58,39 +58,43 @@ void node_insert_helper(struct node *node, int key) {
 
     // if we have an overflow of keys
     if (node->key_count == node->max_keys + 1) {
-        // split logic here, then return median key to parent node
 
         int median_key_index = floor(node->max_keys / 2.0);
         // split handling
-        // leaf case
-        struct node* new_left_node = node_construct(false);
-        struct node* new_right_node = node_construct(false);
+        struct node* new_left_node = node_construct(node->parent);
+        struct node* new_right_node = node_construct(node->parent);
 
-        bool median_reached = false;
-        for (int i = 0; i < node->max_keys + 1; ++i) {
-            if (i == median_key_index) {
-                median_reached = true;
-            } else if (!median_reached) {
-                new_left_node->keys[new_left_node->key_count] = node->keys[i];
-                ++new_left_node->key_count;
-            } else {
-                new_right_node->keys[new_right_node->key_count] = node->keys[i];
-                ++new_right_node->key_count;                    
-            }
+        for (int i = 0; i < median_key_index; ++i) {
+            new_left_node->keys[new_left_node->key_count] = node->keys[i];
+            new_left_node->children[new_left_node->key_count] = node->children[i];
+
+            ++new_left_node->key_count;            
         }
-            
 
-        // internal node case
-        // ...
+        new_left_node->children[new_left_node->key_count] = node->children[i];
 
+        for (int i = median_key_index + 1; i < node->max_keys + 1; ++i) {
+            new_right_node->keys[new_right_node->key_count] = node->keys[i];
+            new_right_node->children[new_right_node->key_count] = node->children[i];                
+            ++new_right_node->key_count;                    
+        }
+        
+        if (!node->parent) {    
+            struct node* new_root_node = node_construct(NULL);
+            node->parent = new_root_node;
+        }
 
         int median_key = node->keys[median_key_index];
-        if (!node->parent) {
-            struct node* new_root_node = node_construct(true);
-            new_root_node->keys[0] = median_key;
-        } else {
-            node_insert_helper(node->parent, median_key);
-        }
+        
+        node->parent->children[node->parent->key_count] = new_left_node;
+        node->parent->children[node->parent->key_count + 1] = new_right_node;
+
+        new_left_node->parent = node->parent;
+        new_right_node->parent = node->parent;
+            
+        node_insert_helper(node->parent, median_key);
+        
+        free(node);
     }
 }
 

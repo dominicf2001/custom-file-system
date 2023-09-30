@@ -28,7 +28,7 @@ void selection_sort(int arr[], int n) {
 }
 
 // Add min_children?
-struct node* node_construct(bool is_root) {
+struct node* node_construct(struct node* parent) {
     struct node* node = malloc(sizeof(struct node));
     
     node->max_children = 3;
@@ -36,7 +36,7 @@ struct node* node_construct(bool is_root) {
 
     node->children = malloc(sizeof(struct node*) * node->max_children);
     node->keys = malloc(sizeof(int) * (node->max_keys + 1));
-    node->is_root = true;
+    node->parent = parent;
 
     node->key_count = 0;
     
@@ -46,7 +46,7 @@ struct node* node_construct(bool is_root) {
     return node;
 }
 
-int node_insert_helper(struct node *node, int key) {
+void node_insert_helper(struct node *node, int key) {
     for (int i = 0; i < node->max_keys + 1; ++i) {
         if (!node->keys[i]) {
             node->keys[i] = key;
@@ -59,36 +59,45 @@ int node_insert_helper(struct node *node, int key) {
     // if we have an overflow of keys
     if (node->key_count == node->max_keys + 1) {
         // split logic here, then return median key to parent node
-        
-        int median_key = node->keys[floor(node->max_keys / 2.0)];
-        
-        if (node->is_root) {
-            // split handling
-            // leaf case
-            struct node* new_left_node = node_construct(false);
-            struct node* new_right_node = node_construct(false);
-            // ...
 
-            // internal node case
-            // ...
+        int median_key_index = floor(node->max_keys / 2.0);
+        // split handling
+        // leaf case
+        struct node* new_left_node = node_construct(false);
+        struct node* new_right_node = node_construct(false);
+
+        bool median_reached = false;
+        for (int i = 0; i < node->max_keys + 1; ++i) {
+            if (i == median_key_index) {
+                median_reached = true;
+            } else if (!median_reached) {
+                new_left_node->keys[new_left_node->key_count] = node->keys[i];
+                ++new_left_node->key_count;
+            } else {
+                new_right_node->keys[new_right_node->key_count] = node->keys[i];
+                ++new_right_node->key_count;                    
+            }
+        }
+            
+
+        // internal node case
+        // ...
 
 
-            // new root node handling
+        int median_key = node->keys[median_key_index];
+        if (!node->parent) {
             struct node* new_root_node = node_construct(true);
-
-            node->is_root = false;
-            new_root_node->children[0] = node;
             new_root_node->keys[0] = median_key;
         } else {
-            return median_key;
+            node_insert_helper(node->parent, median_key);
         }
     }
 }
 
-int node_insert(struct node *node, int key) {
+void node_insert(struct node *node, int key) {
     // check if its a leaf node
     if (node->children[0] == NULL) {
-        return node_insert_helper(node, key);
+        node_insert_helper(node, key);
     } else {
         // obtain the index of the child to insert into
         int i = 0;
@@ -96,22 +105,7 @@ int node_insert(struct node *node, int key) {
             ++i;
         }
         
-        int returned_key = node_insert(node->children[i], key);
-
-        // if a split occurred
-        if (returned_key) {
-            // split handling
-            // leaf case
-            // need to delete memory too?
-            struct node* new_left_node = node_construct(false);
-            struct node* new_right_node = node_construct(false);
-            // ...
-
-            // internal node case
-            // ...
-            
-            return node_insert_helper(node, returned_key);
-        }
+        node_insert(node->children[i], key);
     }
 }
 

@@ -29,35 +29,54 @@ void selection_sort(int arr[], int n) {
 
 // Add min_children?
 struct node* node_construct() {
-    struct node* n = malloc(sizeof(struct node));
+    struct node* node = malloc(sizeof(struct node));
     
-    n->max_children = 3;
-    n->max_keys = n->max_children - 1;
+    node->max_children = 3;
+    node->max_keys = node->max_children - 1;
 
-    n->children = malloc(sizeof(struct node*) * n->max_children);
-    n->keys = malloc(sizeof(int) * (n->max_keys));
+    node->children = malloc(sizeof(struct node*) * node->max_children);
+    node->keys = malloc(sizeof(int) * (node->max_keys));
 
-    n->key_count = 0;
+    node->key_count = 0;
     
-    memset(n->children, 0, n->max_children * sizeof(struct node*));
-    memset(n->keys, 0, n->max_keys * sizeof(int));
+    memset(node->children, 0, node->max_children * sizeof(struct node*));
+    memset(node->keys, 0, node->max_keys * sizeof(int));
     
-    return n;
+    return node;
 }
 
-void node_insert(struct node *root, int key) {
-    if (root->key_count == root->max_keys) {
-        printf("Node is full. Need to break.\n");
-        return;
+int node_insert_helper(struct node *node, int key) {
+    if (node->key_count == node->max_keys) {
+        // split logic here, then return median key to parent node
+        // return median_key;
     }
 
-    for (int i = 0; i < root->max_keys; ++i) {
-        if (!root->keys[i]) {
-            root->keys[i] = key;
-            ++root->key_count;
+    for (int i = 0; i < node->max_keys; ++i) {
+        if (!node->keys[i]) {
+            node->keys[i] = key;
+            ++node->key_count;
             
-            selection_sort(root->keys, root->key_count);
-            return;
+            selection_sort(node->keys, node->key_count);
+            return 0;
+        }
+    }
+}
+
+int node_insert(struct node *node, int key) {
+    // check if its a leaf node
+    if (node->children[0] == NULL) {
+        return node_insert_helper(node, key);
+    } else {
+        // obtain the index of the child to insert into
+        int i = 0;
+        while (key > node->keys[i] && i < node->max_keys) {
+            ++i;
+        }
+        
+        int returned_key = node_insert(node->children[i], key);
+        
+        if (returned_key) {
+            return node_insert_helper(node, returned_key);
         }
     }
 }

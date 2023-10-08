@@ -18,7 +18,7 @@ struct node* node_construct(bool is_leaf) {
 
     node->key_count = 0;
     
-    memset(node->children, NULL, node->max_children * sizeof(struct node*));
+    memset(node->children, 0, node->max_children * sizeof(struct node*));
     memset(node->keys, 0, node->max_keys * sizeof(int));
     
     return node;
@@ -36,6 +36,7 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
     j = 0;
     for (int i = child_node->key_count - 1; i > median_index; --i) {
         new_node->keys[j] = child_node->keys[i];
+        child_node->keys[i] = 0;
         ++new_node->key_count;
         --child_node->key_count;
         ++j;
@@ -49,6 +50,7 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
         --j;
     }
     parent_node->keys[j + 1] = median_key;
+    child_node->keys[median_index] = 0;
     ++parent_node->key_count;
     --child_node->key_count;
 
@@ -61,7 +63,7 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
     }
 
     // link new_node as a child to parent_node, need to clear up room
-    int j = parent_node->key_count + 1;
+    j = parent_node->key_count + 1;
     while (j > child_index) {
         parent_node->children[j + 1] = parent_node->children[j];
         --j;
@@ -87,7 +89,7 @@ void node_insert(struct node *node, int key) {
         while (key > node->keys[i] && i < node->key_count) {
             ++i;
         }
-
+        
         struct node* child = node->children[i];
         bool child_is_full = child->key_count == child->max_keys;
         
@@ -105,17 +107,17 @@ struct b_tree* b_tree_construct() {
     return b_tree;
 }
 
-void b_tree_insert(struct b_tree* b_tree, int key) {
-    bool is_full = b_tree->root->key_count == b_tree->root->max_keys;
+void b_tree_insert(struct b_tree* b_tree, int key){
+    bool root_is_full = b_tree->root->key_count == b_tree->root->max_keys;
     
-    if (is_full) {
+    if (root_is_full) {
         struct node* new_root = node_construct(false);
         new_root->children[0] = b_tree->root;
         node_split(new_root, b_tree->root, 0);
         b_tree->root = new_root;
 
         // node_split causes b_tree->root to have two children. We need to determine which one to insert key into
-        if (key > b_tree->root->keys[0]) {
+        if (key < b_tree->root->keys[0]) {
             node_insert(b_tree->root->children[0], key);
         } else {
             node_insert(b_tree->root->children[1], key);

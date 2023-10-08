@@ -32,6 +32,14 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
     int median_index = parent_node->max_keys / 2;
     int j = 0;
 
+    // copy half the children
+    j = 0;
+    for (int i = child_node->key_count - 1; i >= median_index; --i) {
+        new_node->children[j] = child_node->children[i];
+        child_node->children[i] = NULL;
+        ++j;
+    } 
+
     // copy half the keys
     j = 0;
     for (int i = child_node->key_count - 1; i > median_index; --i) {
@@ -45,7 +53,7 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
     // move the median key up to parent
     int median_key = child_node->keys[median_index];
     j = parent_node->key_count - 1;
-    while (median_key < parent_node->keys[j] && j < 0) {
+    while (median_key < parent_node->keys[j] && j >= 0) {
         parent_node->keys[j + 1] = parent_node->keys[j];
         --j;
     }
@@ -53,14 +61,6 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
     child_node->keys[median_index] = 0;
     ++parent_node->key_count;
     --child_node->key_count;
-
-    // copy half the children
-    j = 0;
-    for (int i = child_node->key_count - 1; i >= median_index; --i) {
-        new_node->children[j] = child_node->children[i];
-        child_node->children[i] = NULL;
-        ++j;
-    }
 
     // link new_node as a child to parent_node, need to clear up room
     j = parent_node->key_count + 1;
@@ -90,14 +90,15 @@ void node_insert(struct node *node, int key) {
             ++i;
         }
         
-        struct node* child = node->children[i];
-        bool child_is_full = child->key_count == child->max_keys;
+        bool child_is_full = node->children[i + 1]->key_count == node->children[i + 1]->max_keys;
         
         if (child_is_full) {
-            node_split(node, child, i);
-        } else {
-            node_insert(child, key);   
+            node_split(node, node->children[i + 1], i + 1);
+            if (key < node->keys[i + 1]) {
+                ++i;
+            }
         }
+        node_insert(node->children[i + 1], key);
     }
 }
 

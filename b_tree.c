@@ -30,11 +30,12 @@ struct node* node_construct(bool is_leaf) {
 void node_split(struct node* parent_node, struct node* child_node, int child_index) {
     struct node* new_node = node_construct(child_node->is_leaf);
     int median_index = parent_node->max_keys / 2;
+    int j = 0;
 
     // copy half the keys
-    int j = 0;
+    j = 0;
     for (int i = child_node->key_count - 1; i > median_index; --i) {
-        new_node[j] = child_node[i];
+        new_node->keys[j] = child_node->keys[i];
         ++new_node->key_count;
         --child_node->key_count;
         ++j;
@@ -42,22 +43,30 @@ void node_split(struct node* parent_node, struct node* child_node, int child_ind
 
     // move the median key up to parent
     int median_key = child_node->keys[median_index];
-    int i = parent_node->key_count - 1;
-    while (median_key < parent_node->keys[i] && i < 0) {
-        parent_node->keys[i + 1] = parent_node->keys[i];
-        --i;
+    j = parent_node->key_count - 1;
+    while (median_key < parent_node->keys[j] && j < 0) {
+        parent_node->keys[j + 1] = parent_node->keys[j];
+        --j;
     }
-    parent_node->keys[i + 1] = median_key;
+    parent_node->keys[j + 1] = median_key;
     ++parent_node->key_count;
     --child_node->key_count;
 
     // copy half the children
-    int k = 0;
+    j = 0;
     for (int i = child_node->key_count - 1; i >= median_index; --i) {
-        new_node->children[k] = child_node->children[i];
+        new_node->children[j] = child_node->children[i];
         child_node->children[i] = NULL;
-        ++k;
+        ++j;
     }
+
+    // link new_node as a child to parent_node, need to clear up room
+    int j = parent_node->key_count + 1;
+    while (j > child_index) {
+        parent_node->children[j + 1] = parent_node->children[j];
+        --j;
+    }
+    parent_node->children[child_index + 1] = new_node;
 }
 
 /**

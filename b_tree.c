@@ -5,28 +5,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-  
-void swap(int* xp, int* yp) {
-    int temp = *xp;
-    *xp = *yp;
-    *yp = temp;
-}
-
-// will need to be modified to handle struct
-// How to sort the structs?
-void selection_sort(int arr[], int n) {
-    int i, j, min_idx;
-    
-    for (i = 0; i < n - 1; i++) {
-        min_idx = i;
-        for (j = i + 1; j < n; j++)
-            if (arr[j] < arr[min_idx])
-                min_idx = j;
-        
-        swap(&arr[min_idx], &arr[i]);
-    }
-}
-
 // Add min_children?
 struct node* node_construct(struct node* parent) {
     struct node* node = malloc(sizeof(struct node));
@@ -47,57 +25,33 @@ struct node* node_construct(struct node* parent) {
 }
 
 void node_insert_helper(struct node *node, int key) {
-    for (int i = 0; i < node->max_keys + 1; ++i) {
-        if (!node->keys[i]) {
-            node->keys[i] = key;
-            ++node->key_count;
-            
-            selection_sort(node->keys, node->key_count);
+    if (node->key_count != node->max_keys) {
+        int i = node->key_count - 1;
+        while (key > node->keys[i] && i < node->key_count) {
+            node->keys[i + 1] = node->keys[i];
+            --i;
         }
-    }
-
-    // if we have an overflow of keys
-    if (node->key_count == node->max_keys + 1) {
-
-        int median_key_index = floor(node->max_keys / 2.0);
-        // split handling
-        struct node* new_left_node = node_construct(node->parent);
-        struct node* new_right_node = node_construct(node->parent);
-
-        for (int i = 0; i < median_key_index; ++i) {
-            new_left_node->keys[new_left_node->key_count] = node->keys[i];
-            new_left_node->children[new_left_node->key_count] = node->children[i];
-
-            ++new_left_node->key_count;            
-        }
-
-        new_left_node->children[new_left_node->key_count] = node->children[i];
-
-        for (int i = median_key_index + 1; i < node->max_keys + 1; ++i) {
-            new_right_node->keys[new_right_node->key_count] = node->keys[i];
-            new_right_node->children[new_right_node->key_count] = node->children[i];                
-            ++new_right_node->key_count;                    
-        }
-        
-        if (!node->parent) {    
-            struct node* new_root_node = node_construct(NULL);
-            node->parent = new_root_node;
-        }
-
-        int median_key = node->keys[median_key_index];
-        
-        node->parent->children[node->parent->key_count] = new_left_node;
-        node->parent->children[node->parent->key_count + 1] = new_right_node;
-
-        new_left_node->parent = node->parent;
-        new_right_node->parent = node->parent;
-            
-        node_insert_helper(node->parent, median_key);
-        
-        free(node);
+        node->keys[i + 1] = key;
+        return;
     }
 }
 
+void node_split(struct node* parent_node,  struct node* child_node) {
+    int median_key_index = node->max_keys / 2;
+    struct node* new_right_node = node_construct(node->parent);
+
+    int median_key = node->keys[median_key_index];
+        
+    if (!node->parent) {
+
+    } else {
+
+    }
+}
+
+/**
+ * @return NULL if no new root_node, otherwise returns the new root_node
+ */
 void node_insert(struct node *node, int key) {
     // check if its a leaf node
     if (node->children[0] == NULL) {
@@ -105,12 +59,35 @@ void node_insert(struct node *node, int key) {
     } else {
         // obtain the index of the child to insert into
         int i = 0;
-        while (key > node->keys[i] && i < node->max_keys) {
+        while (key > node->keys[i] && i < node->key_count) {
             ++i;
         }
         
         node_insert(node->children[i], key);
     }
+}
+
+struct b_tree* b_tree_construct() {
+    struct b_tree* b_tree = malloc(sizeof(struct b_tree));
+    b_tree->root_node = node_construct(NULL);
+    return b_tree;
+}
+
+void b_tree_insert(struct b_tree* b_tree, int key) {
+    if (b_tree->root_node->key_count == b_tree->root_node->max_keys) {
+        struct node* new_root = node_construct(NULL);
+        new_root->children[0] = b_tree->root_node;
+        node_split(new_root, b_tree->root_node);
+        b_tree->root_node = new_root;
+        
+        if (key > b_tree->root_node->keys[0]) {
+            node_insert(b_tree->root_node->children[0], key);
+        } else {
+            node_insert(b_tree->root_node->children[1], key);
+        }
+    }
+    
+    node_insert(b_tree->root_node, key);
 }
 
 void node_debug_print_helper(struct node* node, int level) {
@@ -126,7 +103,8 @@ void node_debug_print_helper(struct node* node, int level) {
             printf("%d, ", node->keys[i]);   
         }
     }
-    printf("] Max Children: %d\n", node->max_children);
+    printf("] Max Children: %d, ", node->max_children);
+    printf("Max Keys: %d\n", node->max_keys);
     
     for (int i = 0; i < node->max_children; ++i) {
         struct node* child = node->children[i];
@@ -144,9 +122,9 @@ void node_debug_print_helper(struct node* node, int level) {
     }
 }
 
-void node_debug_print(struct node* root) {
+void node_debug_print(struct b_tree* b_tree) {
     printf("=== B-Tree Debug Print ===\n");
-    node_debug_print_helper(root, 0);
+    node_debug_print_helper(b_tree->root_node, 0);
     printf("==========================\n");
 }
 

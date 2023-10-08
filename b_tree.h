@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+struct b_tree {
+    struct node* root_node;
+};
+
 struct node {
     int* keys;
 
@@ -14,19 +18,19 @@ struct node {
 };
 
 /**
- * constructs a node
- * @return the constructed node
+ * constructs a b_tree
+ * @return the constructed b_tree
  */
-struct node* node_construct(struct node* parent);
+struct b_tree* b_tree_construct();
 
 /**
- * Inserts a key into b-tree, starting the traversal from root
+ * Inserts a key into b-tree
  */
-void node_insert(struct node *node, int key);
+void b_tree_insert(struct b_tree* b_tree, int key);
 
 /**
  * Prints the keys, max_children, and children recursively
  */
-void node_debug_print(struct node* node);
+void node_debug_print(struct b_tree* b_tree);
 
 #endif // B_TREE_H_

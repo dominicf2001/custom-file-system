@@ -4,16 +4,15 @@
 #include <stdbool.h>
 
 struct b_tree {
-    struct node* root_node;
+    struct node* root;
 };
 
 struct node {
     int* keys;
-
     int max_children;
     int max_keys;
     int key_count;
-    struct node* parent;
+    bool is_leaf;
     struct node** children;
 };
 

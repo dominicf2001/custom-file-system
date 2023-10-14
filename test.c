@@ -1,4 +1,4 @@
-#include "b_tree.h"
+#include "btree/btree.h"
 #include <stdio.h>
 
 int main(int argc, char* argv[]) {
@@ -7,8 +7,8 @@ int main(int argc, char* argv[]) {
     b_tree_insert(tree, 20);
     b_tree_insert(tree, 5);
     b_tree_insert(tree, 6);
-    b_tree_insert(tree, 12);
-    // b_tree_insert(tree, 30);
+    b_tree_insert(tree, 2);
+    b_tree_insert(tree, 30);
     // b_tree_insert(tree, 7);
     // b_tree_insert(tree, 17);
 

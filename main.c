@@ -9,26 +9,44 @@
 #include <stdio.h>
 #include <fuse.h>
 #include "btree/btree.h"
+#include "hashmap/hashmap.h"
 
+unsigned long inode_counter;
 struct inode {
+    unsigned long inode_id;
     struct stat* stat;
 };
 
 struct btree *tree;
 
-#define MAX_INODE_COUNT 10000
-unsigned long inode_counter;
-struct inode* inode_lookup[MAX_INODE_COUNT];
+struct path_inode {
+    const char* path;
+    struct inode* inode;
+};
 
-static int domFS_stat_compare(const void *a, const void *b, void *udata) {    
+struct hashmap* map;
+
+static int domFS_inode_num_compare(const void *a, const void *b, void *udata) {    
     return (*(unsigned long*)a - *(unsigned long*)b);
+}
+
+static int domFS_inode_compare(const void *a, const void *b, void *udata) {
+    const struct path_inode* pa = a;
+    const struct path_inode* pb = b;
+    
+    return domFS_inode_num_compare(&pa->inode->inode_id, &pb->inode->inode_id, udata);
+}
+
+uint64_t domFS_inode_hash(const void *item, uint64_t seed0, uint64_t seed1) {
+    const struct path_inode* pa = item;
+    return hashmap_sip(pa->path, strlen(pa->path), seed0, seed1);
 }
 
 static int domFS_getattr(const char* path, struct stat* stbuf) {
     
     memset(stbuf, 0, sizeof(struct stat));
     
-    const struct i_node* i_node = btree_get();
+    const struct i_node* i_node = btree_get(tree, );
 
     else {
         // Indicates file/directory not found
@@ -46,20 +64,26 @@ static int domFS_mkdir(const char * path, mode_t) {
     new_stat->st_gid = context->gid;
     new_stat->st_uid = context->uid;
     new_stat->st_size = 4096;
+    new_stat->st_nlink = 2;
     
     if (strcmp(path, "/") == 0){
         new_stat->st_mode = S_IFDIR | 0755;
-        new_stat->st_nlink = 2;
     }
     else {
-        new_stat->st_mode = S_IFREG | 0644;
-        new_stat->st_nlink = 1;
+        new_stat->st_mode = S_IFDIR | 0644;
     }
 
     // does not check if exceeds MAX_INODE_COUNT
     btree_set(tree, &inode_counter);
-    inode_lookup[inode_counter] = &(struct inode){.stat = new_stat};
+    hashmap_set(map, &(struct path_inode){
+            .path = path,
+            .inode = &(struct inode){
+                .inode_id = inode_counter,
+                .stat = new_stat
+            }
+        });
 
+    ++inode_counter;
     return 0;
 }
 
@@ -69,8 +93,8 @@ static struct fuse_operations domFS_operations = {
 };
 
 int main(int argc, char* argv[]) {
-    tree = btree_new(sizeof(unsigned long), 0, domFS_stat_compare, NULL);
-    memset(inode_lookup, NULL, sizeof(struct inode*) * MAX_INODE_COUNT);
+    tree = btree_new(sizeof(unsigned long), 0, domFS_inode_num_compare, NULL);
+    map = hashmap_new(sizeof(struct path_inode), 0, 0, 0, domFS_inode_hash, domFS_inode_compare, NULL, NULL);
     inode_counter = 0;
     
     return fuse_main(argc, argv, &domFS_operations, NULL);
